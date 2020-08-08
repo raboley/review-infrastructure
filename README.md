@@ -9,7 +9,7 @@
 
 ## Local setup
 
-1. Terraform `brew install terraform`
+1. Terraform version > 0.12 `brew install terraform`
 1. make `brew install make`
 
 

@@ -1,7 +1,7 @@
 // https://www.terraform.io/docs/providers/azuredevops/index.html
 
 provider "azuredevops" {
-  version = ">= 0.0.1"
+#   version = ">= 0.0.1"
   
   //// sourced from env
   // org_service_url 
@@ -16,3 +16,11 @@ resource "azuredevops_project" "i" {
   description        = "Project generated via Terraform"
 }
 
+resource "azuredevops_git_repository" "i" {
+  project_id = azuredevops_project.i.id
+  name       = "Sample-Empty-Git-Repository"
+  
+  initialization {
+    init_type = "Clean"
+  }
+}
