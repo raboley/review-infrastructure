@@ -4,7 +4,7 @@ setup:
 	cd terraform && terraform init
 
 init:
-	cd terraform && terraform init
+	cd terraform && terraform init --backend-config=backend.hcl
 
 plan:
 	cd terraform && terraform plan

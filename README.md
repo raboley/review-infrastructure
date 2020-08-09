@@ -73,13 +73,96 @@ with the tf apply.
 because we want our backend to be dynamic, we will create a backend.hcl file
 and then let terraform know in the main.tf file that we want it to use a remote backend.
 
+And we will want that file to be dynamically created, and not checked into source control so adding
+a file like backend.hcl will help with that
+
+```hcl
+# terraform/backend.hcl
+workspaces { name = "local-rab-review-infrastructure" }
+hostname     = "app.terraform.io"
+organization = "russellboley"
+```
+
 this changes the init command to be
 
 ```shell script
 terraform init -backend-config=backend.hcl
 ```
 
-And we will want that file to be dynamically created, and not checked into source control
+We can push our original state up to the workspace by saying yes
+to the prompt.
+
+Then we will need to remove the local state file because it will cause a problem
+with tf cloud.
+
+```shell script
+rm -rf terraform/.terraform
+rm -rf terraform/terraform.tfstate
+rm -rf terraform/terraform.tfstate.backup
+```
+
+and now you can run apply again and see what happens.
+
+```shell script
+make init
+make apply
+```
+
+> Error: Error building AzureRM Client: Azure CLI Authorization Profile was not found. Please ensure the Azure CLI is installed and then log-in with `az login`.
+
+This happens because now that we are using terraform cloud for the remote state, it is also running our plans on their agent, which cannot
+access environment variables.
+
+to fix this we can set the workspace to run locally, instead of remote. This can be configured via the rest api for terraform cloud
+
+```sh
+# scripts/terraform_cloud_set_workspace_execution_local.sh
+
+#!/bin/bash
+
+# set in env
+# TERRAFORM_CLOUD_TOKEN=
+# TERRAFORM_CLOUD_ORG_NAME="russellboley"
+# TERRAFORM_CLOUD_WORKSPACE_NAME="local-rab-review-infrastructure"
+
+curl \
+  --header "Authorization: Bearer $TERRAFORM_CLOUD_TOKEN" \
+  --header "Content-Type: application/vnd.api+json" \
+  --request PATCH \
+  -d '{"data": { "type": "workspaces", "attributes": {"operations": true}}}' \
+  "https://app.terraform.io/api/v2/organizations/$TERRAFORM_CLOUD_ORG_NAME/workspaces/$TERRAFORM_CLOUD_WORKSPACE_NAME"
+
+```
+
+if you don't remember your terraform cloud token you pasted for the terraform login step you can get it from
+your `~/.terraform.d/credentials.tfrc.json` file
+
+
+I am going to suggest just putting these values in your profile so you don't forget
+
+```shell script
+# ~/.bash_profile
+
+export TERRAFORM_CLOUD_TOKEN="<token>"
+export TERRAFORM_CLOUD_ORG_NAME="russellboley"
+export TERRAFORM_CLOUD_WORKSPACE_NAME="review-infrastructure-main"
+```
+
+then source the file so it is read in your terminal
+
+```shell script
+source ~/.bash_profile
+```
+
+finally you can update the workspace for local execution
+
+```shell script
+source scripts/terraform_cloud_set_workspace_execution_local.sh
+```
+
+and then running apply should work `make apply`
+
+
 
 ## Local setup
 
