@@ -1,0 +1,27 @@
+name: Greet Everyone
+# This workflow is triggered on pushes to the repository.
+on: [push]
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Create Terraform Backend
+        run: |
+          echo 'workspaces { name = "review-infrastructure-main" }
+                hostname     = "app.terraform.io"
+                organization = "russellboley"' > terraform/backend.hcl
+          cat terraform/backend.hcl
+
+      - name: Terraform Init
+        run: terraform init -backend-config=backend.hcl
+        working-directory: terraform
