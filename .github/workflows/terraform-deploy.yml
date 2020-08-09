@@ -1,4 +1,4 @@
-name: Greet Everyone
+name: Terraform
 # This workflow is triggered on pushes to the repository.
 on: [push]
 
@@ -13,7 +13,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: check pull_number
-        run: echo $pull_number
+        run: |
+          echo $(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH") > env.auto.tfvars
+          cat env.auto.tfvars
+        working-directory: terraform
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
