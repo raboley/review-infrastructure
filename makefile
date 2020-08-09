@@ -1,5 +1,6 @@
 setup:
 	az login
+	terraform login
 	cd terraform && terraform init
 
 init:

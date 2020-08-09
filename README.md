@@ -49,6 +49,37 @@ The easiest way to do this is to leverage Terraform Cloud
 
 ## Setting up Terraform Cloud
 
+Terraform Cloud has the concept of workspaces, which allows you to store
+terraform state in isolated areas and act upon it in a dynamic way. The way
+we will use it for review infrastructure is to have one workspace for when this is run on
+main branch, and then dynamically create new ones when this is done via a review branch.
+
+you can login or create a free account on [Terraform Cloud](https://www.terraform.io/docs/cloud/index.html) which will
+allow you to have up to 4 users and run tf cloud for free with no concurrent runs.
+
+Once you have a Terraform cloud account you need to setup your local machine to be able to connect to Terraform Cloud via a token
+stored on your computer, which can be obtained using the terraform cli
+
+```shell script
+terraform login
+```
+
+That will put your credentials in a place specific to your os that terraform
+will be able to locate and authenticate with terraform cloud.
+
+So next step is creating the backend workspace in terraform cloud that will house main branch's state which we just created 
+with the tf apply.
+
+because we want our backend to be dynamic, we will create a backend.hcl file
+and then let terraform know in the main.tf file that we want it to use a remote backend.
+
+this changes the init command to be
+
+```shell script
+terraform init -backend-config=backend.hcl
+```
+
+And we will want that file to be dynamically created, and not checked into source control
 
 ## Local setup
 

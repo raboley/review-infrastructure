@@ -66,3 +66,5 @@ override.tf.json
 .history
 
 # End of https://www.toptal.com/developers/gitignore/api/go,visualstudiocode,terraform
+.idea/
+terraform/backend.hcl
