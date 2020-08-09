@@ -26,16 +26,32 @@ terraform to spin up and spin down.
 
 1. Terraform version > 0.12 `brew install terraform`
 1. make `brew install make`
+1. [azure cli](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-macos?view=azure-cli-latest) `brew update && brew install azure-cli`
 
+## First time easy setup
 
-provider info is sourced from env vars.
-I am adding them to the .profile
+The setup command steps will be run using
 
-```bash
-# ~/.bash_profile
-export AZDO_ORG_SERVICE_URL="https://dev.azure.com/RussellBoley"
-export AZDO_PERSONAL_ACCESS_TOKEN="<TOKEN>"
+```shell script
+make setup
 ```
+
+The azure terraform provider can source credentials from the env which are set by running
+
+```shell script
+az login
+```
+
+> note you may need to set your tenant and/or subscription if you have multiple of either
+> if you only have one don't worry about the commands underneath
+
+```shell script
+# Setting the particular tenant and subscription if you have multiple
+az login --tenant <tenant id>
+az account set --subscription <subscription id or name>
+```
+
+the provider info is sourced from the az login command, so ensure you have done that prior to setting up
 
 initialize terraform
 
@@ -54,3 +70,9 @@ terraform apply
 > If you get error personal access token required, ensure that your env contains the AZDO_PERSONAL_ACCESS_TOKEN env variable with the PAT token in it.
 > if it is in your profile you may need to restart terminal or source the profile
 > `source ~/.bash_profile`
+
+
+# Deploy the infrastructure
+
+# Everything as Code
+

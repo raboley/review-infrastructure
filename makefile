@@ -1,3 +1,7 @@
+setup:
+	az login
+	cd terraform && terraform init
+
 init:
 	cd terraform && terraform init
 
