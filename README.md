@@ -162,7 +162,14 @@ source scripts/terraform_cloud_set_workspace_execution_local.sh
 
 and then running apply should work `make apply`
 
+## Setup the pipeline
 
+## Setting up tests
+
+An important part of CI/CD and modern programming in general is setting up tests. For this use case I will setup a very simple test
+that checks the output for an appropriately named resource after everything has run.
+
+# to-do do the tests with terratest
 
 ## Local setup
 
