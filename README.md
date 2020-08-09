@@ -210,6 +210,7 @@ TF cloud runs locally instead of on remote agents.
 ```yaml
       - name: Terraform apply
         run: terraform apply --auto-approve
+        working-directory: terraform
         env:
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
