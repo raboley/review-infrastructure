@@ -22,6 +22,34 @@ workflow enabled for software engineers, is enabled for infrastructure engineers
 This repository example will show how to do that with an azure resource group using
 terraform to spin up and spin down. 
 
+## Setting up the infrastructure code
+
+I am deliberately making this example super simple, because the scaffolding around it is
+complicated enough, and once you understand the concepts it is easy to apply it to anything. I 
+will likely make a pt 2 that will show how to implement this process for an aks cluster.
+
+in the main.tf file we will setup: 
+
+1. azure provider for terraform
+1. create an azure resource group using a dynamic name
+1. take in a var of prefix
+1. output the resulting resource group name
+
+running this locally will create a resource group called `main-review-infrastructure-rg`
+
+```shell script
+make apply
+```
+
+That is great for creating one resource group one time, but how does
+the review stuff all work? For that we need to have multiple workspaces for terraform
+to use so that it understands the difference between review, and main instances.
+
+The easiest way to do this is to leverage Terraform Cloud
+
+## Setting up Terraform Cloud
+
+
 ## Local setup
 
 1. Terraform version > 0.12 `brew install terraform`
