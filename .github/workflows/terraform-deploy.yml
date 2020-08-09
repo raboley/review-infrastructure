@@ -12,9 +12,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: check pull_number
+      - name: set pull_number var to tfvars
         run: |
-          echo $(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH") > env.auto.tfvars
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          echo "suffix = review-$pull_number" > env.auto.tfvars
           cat env.auto.tfvars
         working-directory: terraform
 
