@@ -37,12 +37,12 @@ data "azuredevops_git_repositories" "tf_azure_devops" {
 }
 
 resource "azuredevops_build_definition" "b" {
-  project_id = azuredevops_project.p.id
+  project_id = azuredevops_project.i.id
   name       = "Sample Build Definition"
 
   repository {
     repo_type = "TfsGit"
-    repo_id   = data.azuredevops_git_repositories.tf_azure_devops.id
+    repo_id   = data.azuredevops_git_repositories.tf_azure_devops.repositories[0].id
     yml_path  = "azure-pipelines.yml"
   }
 }
