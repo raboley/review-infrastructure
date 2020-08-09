@@ -164,6 +164,59 @@ and then running apply should work `make apply`
 
 ## Setup the pipeline
 
+Since this is hosted on github we will use github actions. to create a github actions pipeline you create a directory structure 
+following:
+
+.github
+└── workflows
+    └── terraform-deploy.yml
+
+using terraform deploy as the pipeline to create the infra.
+
+It will basically need to login to terraform cloud, get credentials for azure and then apply the infrastructure changes.
+
+you will need to add that token as a secret called `TF_API_TOKEN`
+
+Since we want to use a non-interactive login for a ci/cd pipeline and we aren't hosting our own infrastrucute we will use
+a service principal to authenticate with azure. That can be created following the [terraform provider for creating a service
+principal and secret for auth](https://www.terraform.io/docs/providers/azurerm/guides/service_principal_client_secret.html)
+
+```shell script
+az ad sp create-for-rbac --role="Contributor" #--scopes="/subscriptions/SUBSCRIPTION_ID"
+```
+
+which will outupt a bunch of info, we care specifically about the appId, password, and tenant Id
+
+make all of those secrets in github, which will be exported as env vars in the steps that use them
+```shell script
+$ export ARM_CLIENT_ID="00000000-0000-0000-0000-000000000000"
+$ export ARM_CLIENT_SECRET="00000000-0000-0000-0000-000000000000"
+$ export ARM_SUBSCRIPTION_ID="00000000-0000-0000-0000-000000000000"
+$ export ARM_TENANT_ID="00000000-0000-0000-0000-000000000000"
+```
+
+you will get all those via this list, but will still need the subscription ID, so you can get that via the command
+
+```shell script
+az account list
+```
+
+and then pick your subscription and the `id` field is your sub id.
+
+
+then you finally add them as env vars to your task which should allow auth to still work since we are running
+TF cloud runs locally instead of on remote agents.
+
+```yaml
+      - name: Terraform apply
+        run: terraform apply --auto-approve
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+```
+
 ## Setting up tests
 
 An important part of CI/CD and modern programming in general is setting up tests. For this use case I will setup a very simple test
