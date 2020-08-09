@@ -218,6 +218,18 @@ TF cloud runs locally instead of on remote agents.
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 ```
 
+## Setup Review branches in the pipeline
+
+Now it actually works, so it is about setting variables between PR and non-pr runs. PR runs should have review-pr# associated with them
+
+https://github.com/actions/checkout/issues/58
+
+if it is a pr we can get it through this
+
+```shell script
+pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+```
+
 ## Setting up tests
 
 An important part of CI/CD and modern programming in general is setting up tests. For this use case I will setup a very simple test
