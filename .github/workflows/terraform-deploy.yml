@@ -14,7 +14,7 @@ jobs:
         run: |
           pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           if [[ pull_number != "null" ]]; then
-            echo 'suffix = "review-'$pull_number'}"' > env.auto.tfvars
+            echo 'suffix = "review-'$pull_number'"' > env.auto.tfvars
           fi
           cat env.auto.tfvars
         working-directory: terraform
