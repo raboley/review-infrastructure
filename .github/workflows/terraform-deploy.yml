@@ -29,6 +29,14 @@ jobs:
         run: terraform init -backend-config=backend.hcl
         working-directory: terraform
 
+      - name: Set Terraform Cloud backend Exectuion to local
+        run: |
+          export TERRAFORM_CLOUD_WORKSPACE_NAME="review-infrastructure-main"
+          . scripts/terraform_cloud_set_workspace_execution_local.sh
+        env:
+          TERRAFORM_CLOUD_TOKEN: ${{ secrets.TF_API_TOKEN }}
+          TERRAFORM_CLOUD_ORG_NAME: russellboley
+
       - name: Terraform apply
         run: terraform apply --auto-approve
         working-directory: terraform

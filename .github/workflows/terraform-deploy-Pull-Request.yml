@@ -29,11 +29,21 @@ jobs:
           echo 'workspaces { name = "review-infrastructure-main-review-'$pull_number'" }
                 hostname     = "app.terraform.io"
                 organization = "russellboley"' > terraform/backend.hcl
+
           cat terraform/backend.hcl
 
       - name: Terraform Init
         run: terraform init -backend-config=backend.hcl
         working-directory: terraform
+
+      - name: Set Terraform Cloud backend Exectuion to local
+        run: |
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          export TERRAFORM_CLOUD_WORKSPACE_NAME="review-infrastructure-review-$pull_number"
+          . scripts/terraform_cloud_set_workspace_execution_local.sh
+        env:
+          TERRAFORM_CLOUD_TOKEN: ${{ secrets.TF_API_TOKEN }}
+          TERRAFORM_CLOUD_ORG_NAME: russellboley
 
       - name: Terraform apply
         run: terraform apply --auto-approve
