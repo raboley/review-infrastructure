@@ -262,7 +262,33 @@ Using flags we can pass in the name we expect the resource group to be, and then
 > Note: there is some bug with terraform output if you have the terraform setup task with the wrapper enabled
 > you have to ensure to disable the wrapper on that step.
 
-# to-do do the tests with terratest
+## Setting up slate docs
+
+using [go-slate](https://github.com/growler/go-slate) you can install docs in the style slate can render.
+
+install 
+
+```shell script
+go get -u github.com/growler/go-slate
+```
+
+```shell script
+go-slate extract docs/
+```
+
+then you can edit the docs/index.html.md file to populate the documentation in the slate style.
+
+to view the docs run:
+
+```shell script
+go-slate site docs/ temp/
+```
+
+Then open the html file in your browser to see a local preview of the docs.
+
+### Publishing to github pages
+
+
 
 ## Local setup
 
