@@ -1,0 +1,76 @@
+name: Terraform Cleanup on Merge
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  terraform:
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: set pull_number var to tfvars & tf backend
+        if: github.ref != 'refs/heads/main'
+        run: |
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          echo 'suffix = "review-'$pull_number'"' > env.auto.tfvars
+
+          cat env.auto.tfvars
+        working-directory: terraform
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Create Terraform Backend
+        run: |
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          if [[ -n $pull_number ]]
+          then
+            workspace_suffix="review-$pull_number"
+          else
+            workspace_suffix="main"
+          fi
+
+          echo 'workspaces { name = "review-infrastructure-'$workspace_suffix'" }
+                hostname     = "app.terraform.io"
+                organization = "russellboley"' > terraform/backend.hcl
+
+          cat terraform/backend.hcl
+
+      - name: Terraform Init
+        run: terraform init -backend-config=backend.hcl
+        working-directory: terraform
+
+      - name: Set Terraform Cloud backend Exectuion to local
+        run: |
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          if [[ -n $pull_number ]]
+          then
+            workspace_suffix="review-$pull_number"
+          else
+            workspace_suffix="main"
+          fi
+
+          export TERRAFORM_CLOUD_WORKSPACE_NAME="review-infrastructure-$workspace_suffix"
+
+          echo "TERRAFORM_CLOUD_TOKEN: $TERRAFORM_CLOUD_TOKEN"
+          echo "TERRAFORM_CLOUD_ORG_NAME: $TERRAFORM_CLOUD_ORG_NAME"
+          echo "TERRAFORM_CLOUD_WORKSPACE_NAME: $TERRAFORM_CLOUD_WORKSPACE_NAME"
+
+          . scripts/terraform_cloud_set_workspace_execution_local.sh
+        env:
+          TERRAFORM_CLOUD_TOKEN: ${{ secrets.TF_API_TOKEN }}
+          TERRAFORM_CLOUD_ORG_NAME: russellboley
+
+      - name: Terraform destroy
+        run: terraform destroy --auto-approve
+        working-directory: terraform
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}

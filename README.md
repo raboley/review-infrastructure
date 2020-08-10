@@ -230,6 +230,12 @@ if it is a pr we can get it through this
 pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 ```
 
+the last part is we want to destroy the infrastructure on successful PR merge to main
+
+### destroy review infra on merge to main
+
+
+
 ## Setting up tests
 
 An important part of CI/CD and modern programming in general is setting up tests. For this use case I will setup a very simple test
