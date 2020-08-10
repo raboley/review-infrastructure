@@ -29,6 +29,8 @@ jobs:
         uses: hashicorp/setup-terraform@v1
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          # turn off the terraform wrapper since this breaks terratest
+          terraform_wrapper: false
 
       - name: Create Terraform Backend
         run: |
@@ -79,5 +81,25 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14.x
+
+      - name: Run Smoke Tests
+        run: |
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          if [[ -n $pull_number ]]
+          then
+            suffix="review-$pull_number"
+          else
+            suffix="main"
+          fi
+
+          resource_group_name="review-infrastructure-rg-$suffix"
+          echo "$resource_group_name"
+          go test -resourceGroupName="$resource_group_name"
+        working-directory: tests
 
 
