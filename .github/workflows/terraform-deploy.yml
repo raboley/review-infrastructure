@@ -6,8 +6,6 @@ jobs:
   terraform:
     name: 'Terraform'
     runs-on: ubuntu-latest
-    env:
-      pull_number: $(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -15,7 +13,9 @@ jobs:
       - name: set pull_number var to tfvars
         run: |
           pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          echo "suffix = review-$pull_number" > env.auto.tfvars
+          if [[ pull_number != "null" ]]; then
+            echo 'suffix = "review-${pull_number}"' > env.auto.tfvars
+          fi
           cat env.auto.tfvars
         working-directory: terraform
 
