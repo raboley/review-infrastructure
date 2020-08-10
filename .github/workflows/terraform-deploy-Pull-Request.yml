@@ -1,9 +1,6 @@
 name: Terraform
 # This workflow is triggered on pushes to the repository.
-on:
-  push:
-    branches:
-      - main
+on: pull_request
 
 jobs:
   terraform:
@@ -13,6 +10,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: set pull_number var to tfvars & tf backend
+        run: |
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          echo 'suffix = "review-'$pull_number'"' > env.auto.tfvars
+
+          cat env.auto.tfvars
+        working-directory: terraform
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
@@ -20,7 +25,8 @@ jobs:
 
       - name: Create Terraform Backend
         run: |
-          echo 'workspaces { name = "review-infrastructure-main" }
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          echo 'workspaces { name = "review-infrastructure-main-review-'$pull_number'" }
                 hostname     = "app.terraform.io"
                 organization = "russellboley"' > terraform/backend.hcl
           cat terraform/backend.hcl
