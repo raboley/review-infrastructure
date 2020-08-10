@@ -17,6 +17,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: set pull_number var to tfvars & tf backend
+        if: github.ref != 'refs/heads/main'
         run: |
           pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           echo 'suffix = "review-'$pull_number'"' > env.auto.tfvars
@@ -32,7 +33,14 @@ jobs:
       - name: Create Terraform Backend
         run: |
           pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          echo 'workspaces { name = "review-infrastructure-review-'$pull_number'" }
+          if [[ -n $pull_number ]]
+          then
+            workspace_suffix="review-$pull_number"
+          else
+            workspace_suffix="main"
+          fi
+
+          echo 'workspaces { name = "review-infrastructure-'$workspace_suffix'" }
                 hostname     = "app.terraform.io"
                 organization = "russellboley"' > terraform/backend.hcl
 
@@ -45,7 +53,14 @@ jobs:
       - name: Set Terraform Cloud backend Exectuion to local
         run: |
           pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          export TERRAFORM_CLOUD_WORKSPACE_NAME="review-infrastructure-review-$pull_number"
+          if [[ -n $pull_number ]]
+          then
+            workspace_suffix="review-$pull_number"
+          else
+            workspace_suffix="main"
+          fi
+
+          export TERRAFORM_CLOUD_WORKSPACE_NAME="review-infrastructure-$workspace_suffix"
 
           echo "TERRAFORM_CLOUD_TOKEN: $TERRAFORM_CLOUD_TOKEN"
           echo "TERRAFORM_CLOUD_ORG_NAME: $TERRAFORM_CLOUD_ORG_NAME"
