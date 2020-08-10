@@ -93,7 +93,7 @@ jobs:
           echo "TERRAFORM_CLOUD_ORG_NAME: $TERRAFORM_CLOUD_ORG_NAME"
           echo "TERRAFORM_CLOUD_WORKSPACE_NAME: $TERRAFORM_CLOUD_WORKSPACE_NAME"
 
-          . scripts/terraform_cloud_set_workspace_execution_local.sh
+          . scripts/terraform_cloud_delete_workspace.sh
         env:
           TERRAFORM_CLOUD_TOKEN: ${{ secrets.TF_API_TOKEN }}
           TERRAFORM_CLOUD_ORG_NAME: russellboley
