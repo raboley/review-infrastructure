@@ -234,6 +234,16 @@ the last part is we want to destroy the infrastructure on successful PR merge to
 
 ### destroy review infra on merge to main
 
+This will basically run the same pipeline as the create, except with the destroy in terraform instead of apply, and only trigger on
+a PR being closed. 
+
+This is accomplished with the trigger:
+
+```yaml
+on:
+  pull_request:
+    types: [closed]
+```
 
 
 ## Setting up tests
