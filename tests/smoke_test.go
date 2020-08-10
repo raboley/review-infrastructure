@@ -19,7 +19,7 @@ func TestResourceGroupCreated(t *testing.T) {
 	}
 	resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
 
-	t.Log(expectedResourceGroupName)
-	t.Log(resourceGroupName)
+	t.Logf("expected rg: %s", expectedResourceGroupName)
+	t.Logf("actual rg: %s", resourceGroupName)
 	assert.Equal(t, expectedResourceGroupName, resourceGroupName)
 }
