@@ -40,6 +40,11 @@ jobs:
         run: |
           pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           export TERRAFORM_CLOUD_WORKSPACE_NAME="review-infrastructure-review-$pull_number"
+
+          echo "TERRAFORM_CLOUD_TOKEN: $TERRAFORM_CLOUD_TOKEN"
+          echo "TERRAFORM_CLOUD_ORG_NAME: $TERRAFORM_CLOUD_ORG_NAME"
+          echo "TERRAFORM_CLOUD_WORKSPACE_NAME: $TERRAFORM_CLOUD_WORKSPACE_NAME"
+
           . scripts/terraform_cloud_set_workspace_execution_local.sh
         env:
           TERRAFORM_CLOUD_TOKEN: ${{ secrets.TF_API_TOKEN }}
