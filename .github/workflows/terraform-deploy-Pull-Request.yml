@@ -26,7 +26,7 @@ jobs:
       - name: Create Terraform Backend
         run: |
           pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          echo 'workspaces { name = "review-infrastructure-main-review-'$pull_number'" }
+          echo 'workspaces { name = "review-infrastructure-review-'$pull_number'" }
                 hostname     = "app.terraform.io"
                 organization = "russellboley"' > terraform/backend.hcl
 
