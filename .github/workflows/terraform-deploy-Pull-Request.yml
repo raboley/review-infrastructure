@@ -1,6 +1,12 @@
 name: Terraform
 # This workflow is triggered on pushes to the repository.
-on: pull_request
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   terraform:
