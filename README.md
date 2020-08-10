@@ -257,6 +257,11 @@ Manual checks are bad though, so we should add some tests. Enter Terratest
 An important part of CI/CD and modern programming in general is setting up tests. For this use case I will setup a very simple test
 that checks the output for an appropriately named resource after everything has run.
 
+Using flags we can pass in the name we expect the resource group to be, and then check it against the terraform output using terratest.
+
+> Note: there is some bug with terraform output if you have the terraform setup task with the wrapper enabled
+> you have to ensure to disable the wrapper on that step.
+
 # to-do do the tests with terratest
 
 ## Local setup
