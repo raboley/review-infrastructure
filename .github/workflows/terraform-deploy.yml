@@ -85,6 +85,10 @@ jobs:
         with:
           go-version: 1.14.x
 
+      - name: Install Go Dependencies
+        run: go build .
+        working-directory: tests
+
       - name: Run Smoke Tests
         run: |
           pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
@@ -96,6 +100,7 @@ jobs:
           fi
 
           resource_group_name="review-infrastructure-rg-$suffix"
-          go test ./tests/ -resourceGroupName=$resource_group_name
+          go test -v -resourceGroupName=$resource_group_name
+        working-directory: tests
 
 
