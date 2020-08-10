@@ -245,6 +245,12 @@ on:
     types: [closed]
 ```
 
+Then by adding a call to destroy the infra using terraform destroy, and deleting the workspace to cleanup the workspace
+we get a full lifecycle managed review infrastructure that can be used for true validation in an isolated and safe way.
+
+Manual checks are bad though, so we should add some tests. Enter Terratest
+
+## Testing Infrastructure using Terratest
 
 ## Setting up tests
 
