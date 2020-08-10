@@ -96,7 +96,8 @@ jobs:
           fi
 
           resource_group_name="review-infrastructure-rg-$suffix"
-          go test -resourceGroupName='"'$resource_group_name'"'
+          echo "$resource_group_name"
+          go test -resourceGroupName="$resource_group_name"
         working-directory: tests
 
 
