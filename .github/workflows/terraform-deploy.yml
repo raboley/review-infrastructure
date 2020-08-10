@@ -16,6 +16,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: set-env suffix
+        run: |
+          echo "$GITHUB_EVENT_PATH"
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          echo "$pull_number"
+          if [[ -n $pull_number ]]
+          then
+            workspace_suffix="review-$pull_number"
+          else
+            workspace_suffix="main"
+          fi
+          echo "::set-env name=suffix::$workspace_suffix"
+
       - name: set pull_number var to tfvars & tf backend
         if: github.ref != 'refs/heads/main'
         run: |
