@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   terraform:
@@ -13,6 +16,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: set pull_number var to tfvars & tf backend
+        if: github.ref != 'refs/heads/main'
+        run: |
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          echo 'suffix = "review-'$pull_number'"' > env.auto.tfvars
+
+          cat env.auto.tfvars
+        working-directory: terraform
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
@@ -20,9 +32,18 @@ jobs:
 
       - name: Create Terraform Backend
         run: |
-          echo 'workspaces { name = "review-infrastructure-main" }
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          if [[ -n $pull_number ]]
+          then
+            workspace_suffix="review-$pull_number"
+          else
+            workspace_suffix="main"
+          fi
+
+          echo 'workspaces { name = "review-infrastructure-'$workspace_suffix'" }
                 hostname     = "app.terraform.io"
                 organization = "russellboley"' > terraform/backend.hcl
+
           cat terraform/backend.hcl
 
       - name: Terraform Init
@@ -31,7 +52,20 @@ jobs:
 
       - name: Set Terraform Cloud backend Exectuion to local
         run: |
-          export TERRAFORM_CLOUD_WORKSPACE_NAME="review-infrastructure-main"
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          if [[ -n $pull_number ]]
+          then
+            workspace_suffix="review-$pull_number"
+          else
+            workspace_suffix="main"
+          fi
+
+          export TERRAFORM_CLOUD_WORKSPACE_NAME="review-infrastructure-$workspace_suffix"
+
+          echo "TERRAFORM_CLOUD_TOKEN: $TERRAFORM_CLOUD_TOKEN"
+          echo "TERRAFORM_CLOUD_ORG_NAME: $TERRAFORM_CLOUD_ORG_NAME"
+          echo "TERRAFORM_CLOUD_WORKSPACE_NAME: $TERRAFORM_CLOUD_WORKSPACE_NAME"
+
           . scripts/terraform_cloud_set_workspace_execution_local.sh
         env:
           TERRAFORM_CLOUD_TOKEN: ${{ secrets.TF_API_TOKEN }}
