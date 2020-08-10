@@ -10,7 +10,6 @@ import (
 var resourceGroupName = flag.String("resourceGroupName", "", "The resource group expected to be created")
 
 func TestResourceGroupCreated(t *testing.T) {
-	t.Fail()
 
 	expectedResourceGroupName := *resourceGroupName
 	// website::tag::1:: Configure Terraform setting up a path to Terraform code.
