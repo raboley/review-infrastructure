@@ -80,4 +80,22 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14.x
+
+      - name: Run Smoke Tests
+        run: |
+          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          if [[ -n $pull_number ]]
+          then
+            suffix="review-$pull_number"
+          else
+            suffix="main"
+          fi
+
+          resource_group_name="review-infrastructure-rg-$suffix"
+          go test ./tests/ -resourceGroupName=$resource_group_name
+
 
