@@ -16,11 +16,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: set pull_number var to tfvars & tf backend
-        if: github.ref != 'refs/heads/main'
+      - name: set-env suffix
         run: |
+          echo "$GITHUB_EVENT_PATH"
           pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          echo 'suffix = "review-'$pull_number'"' > env.auto.tfvars
+          echo "$pull_number"
+          if [[ -n $pull_number ]]
+          then
+            suffix="review-$pull_number"
+          else
+            suffix="main"
+          fi
+          echo "$suffix"
+
+          echo "::set-env name=suffix::$suffix"
+
+      - name: set pull_number var to tfvars & tf backend
+        run: |
+          echo '
+            suffix = "'$suffix'"
+            ' > env.auto.tfvars
 
           cat env.auto.tfvars
         working-directory: terraform
@@ -34,15 +49,7 @@ jobs:
 
       - name: Create Terraform Backend
         run: |
-          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          if [[ -n $pull_number ]]
-          then
-            workspace_suffix="review-$pull_number"
-          else
-            workspace_suffix="main"
-          fi
-
-          echo 'workspaces { name = "review-infrastructure-'$workspace_suffix'" }
+          echo 'workspaces { name = "review-infrastructure-'$suffix'" }
                 hostname     = "app.terraform.io"
                 organization = "russellboley"' > terraform/backend.hcl
 
@@ -54,15 +61,7 @@ jobs:
 
       - name: Set Terraform Cloud backend Exectuion to local
         run: |
-          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          if [[ -n $pull_number ]]
-          then
-            workspace_suffix="review-$pull_number"
-          else
-            workspace_suffix="main"
-          fi
-
-          export TERRAFORM_CLOUD_WORKSPACE_NAME="review-infrastructure-$workspace_suffix"
+          export TERRAFORM_CLOUD_WORKSPACE_NAME="review-infrastructure-$suffix"
 
           echo "TERRAFORM_CLOUD_TOKEN: $TERRAFORM_CLOUD_TOKEN"
           echo "TERRAFORM_CLOUD_ORG_NAME: $TERRAFORM_CLOUD_ORG_NAME"
@@ -89,16 +88,9 @@ jobs:
 
       - name: Run Smoke Tests
         run: |
-          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          if [[ -n $pull_number ]]
-          then
-            suffix="review-$pull_number"
-          else
-            suffix="main"
-          fi
-
           resource_group_name="review-infrastructure-rg-$suffix"
           echo "$resource_group_name"
+
           go test -resourceGroupName="$resource_group_name"
         working-directory: tests
 
