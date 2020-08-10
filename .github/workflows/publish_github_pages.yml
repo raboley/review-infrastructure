@@ -9,6 +9,7 @@ jobs:
       ruby-version: 2.5
 
     steps:
+      - uses: actions/checkout@v2
       - name: Install Go
         uses: actions/setup-go@v2
         with:
