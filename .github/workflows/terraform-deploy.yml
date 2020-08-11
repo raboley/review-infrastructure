@@ -15,7 +15,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      # @todo #12:10mins change this to a script
       - name: set-env suffix
         run: |
           echo "$GITHUB_EVENT_PATH"
@@ -46,6 +45,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
           # turn off the terraform wrapper since this breaks terratest
           terraform_wrapper: false
+          terraform_version: 0.12.26
 
       - name: Create Terraform Backend
         run: |

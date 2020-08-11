@@ -25,7 +25,8 @@ jobs:
         uses: hashicorp/setup-terraform@v1
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-      # @todo #12:10 mins refactor this as well
+          terraform_version: 0.12.26
+
       - name: Create Terraform Backend
         run: |
           pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
@@ -37,8 +38,8 @@ jobs:
           fi
 
           echo 'workspaces { name = "review-infrastructure-'$workspace_suffix'" }
-                hostname     = "app.terraform.io"
-                organization = "russellboley"' > terraform/backend.hcl
+          hostname     = "app.terraform.io"
+          organization = "russellboley"' > terraform/backend.hcl
 
           cat terraform/backend.hcl
 

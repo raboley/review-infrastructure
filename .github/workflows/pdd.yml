@@ -1,0 +1,21 @@
+name: pdd
+
+on:
+  push:
+    branches: [ '*' ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      ruby-version: 2.5
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ env.ruby-version }}
+    - run: make pdd
+    - run: . ./scripts/pdd-commit-hook.sh
+

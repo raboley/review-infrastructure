@@ -1,6 +1,5 @@
-hooks:
-	ln -s -f ../../.pre-commit.sh .git/hooks/pre-commit
 setup:
+	ln -s -f ../../.pre-commit.sh .git/hooks/pre-commit
 	. ./scripts/install-pdd.sh
 	az login
 	terraform login
@@ -17,3 +16,7 @@ apply:
 
 destroy:
 	cd terraform && terraform destroy --auto-approve
+
+pdd:
+	ln -s -f ../../.pre-commit.sh .git/hooks/pre-commit
+	. ./scripts/install-pdd.sh
