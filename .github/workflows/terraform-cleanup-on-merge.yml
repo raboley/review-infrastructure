@@ -25,7 +25,7 @@ jobs:
         uses: hashicorp/setup-terraform@v1
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-      # @todo #12:10 mins refactor this as well
+      # @todo #12:10 mins refactor this as well to be a script
       - name: Create Terraform Backend
         run: |
           pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
