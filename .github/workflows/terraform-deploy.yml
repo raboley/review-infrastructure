@@ -46,6 +46,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
           # turn off the terraform wrapper since this breaks terratest
           terraform_wrapper: false
+          terraform_version: 0.13.0
 
       - name: Create Terraform Backend
         run: |
