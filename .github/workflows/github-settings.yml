@@ -11,10 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: |
-          curl \
-            -X PATCH \
-            -H "Accept: application/vnd.github.v3+json" \
-            -u raboley:${{ secrets.API_GITHUB_TOKEN }} \
-            https://api.github.com/repos/${{ github.repository }} \
-            -d '{"delete_branch_on_merge":"true"}'
+      - run: . .github/actions/update-github-repo-settings.sh
+        env:
+          API_GITHUB_TOKEN: ${{ secrets.API_GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}

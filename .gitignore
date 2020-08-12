@@ -1,3 +1,6 @@
+# custom
+*/local.auto.tfvars
+*/backend.hcl
 
 # Created by https://www.toptal.com/developers/gitignore/api/go,visualstudiocode,terraform
 # Edit at https://www.toptal.com/developers/gitignore?templates=go,visualstudiocode,terraform
