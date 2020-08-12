@@ -1,0 +1,23 @@
+name: My Node Action
+
+on:
+  push:
+    paths:
+      - '.github/actions/update-github-repo-settings.js'
+      - '.github/workflows/github-settings.yml'
+
+jobs:
+  my-action:
+    runs-on: ubuntu-latest
+    steps:
+      # Check out code using git
+      - uses: actions/checkout@v2
+      # Install Node 12
+      - uses: actions/setup-node@v1
+        with:
+          version: 12
+      # Node.js script can be anywhere. A good convention is to put local GitHub Actions
+      # into the `.github/actions` folder
+      - run: node .github/actions/update-github-repo-settings.js
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
