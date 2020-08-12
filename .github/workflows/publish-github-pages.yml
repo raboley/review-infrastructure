@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'docs/*'
+      - '.github/workflows/publish-github-pages.yml'
 jobs:
   publish:
     runs-on: ubuntu-latest
