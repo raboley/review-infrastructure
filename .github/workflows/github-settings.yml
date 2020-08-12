@@ -1,4 +1,4 @@
-name: My Node Action
+name: Update Github Repo Settings
 
 on:
   push:
@@ -19,5 +19,5 @@ jobs:
       # Node.js script can be anywhere. A good convention is to put local GitHub Actions
       # into the `.github/actions` folder
       - run: node .github/actions/update-github-repo-settings.js
-        with:
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
