@@ -1,2 +1,2 @@
 # testing the new filter
-npx embedme ./source/index.html.md
+npx embedme README.md

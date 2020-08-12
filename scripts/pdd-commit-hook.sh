@@ -1,1 +1,1 @@
-pdd
+pdd --exclude=.idea/**
