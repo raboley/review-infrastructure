@@ -11,12 +11,12 @@ provider "azurerm" {
 }
 
 # Create a resource group
-variable "suffix" {
-  default = "main"
+variable "environment" {
+  default = "dev"
 }
 
 resource "azurerm_resource_group" "i" {
-  name     = "review-infrastructure-rg-${var.suffix}"
+  name     = "${environment}-infrastructure-rg"
   location = "West US"
 }
 

@@ -24,3 +24,6 @@ destroy:
 pdd:
 	ln -s -f ../../.pre-commit.sh .git/hooks/pre-commit
 	. ./scripts/install-pdd.sh
+
+docs:
+	go-slate site docs/ build/
