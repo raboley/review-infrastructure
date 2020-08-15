@@ -2,8 +2,12 @@ setup:
 	ln -s -f ../../.pre-commit.sh .git/hooks/pre-commit
 	. ./scripts/install-pdd.sh
 	az login
+	#initialize terraform workspace
 	terraform login
 	cd terraform && terraform init
+	#Install envsubst for macos
+	brew install gettext
+	brew link --force gettext
 
 init:
 	cd terraform && terraform init --backend-config=backend.hcl
