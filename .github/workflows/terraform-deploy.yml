@@ -5,14 +5,14 @@ on:
     branches:
       - main
     paths:
-      - '.github/actions/update-github-repo-settings.js'
-      - '.github/workflows/github-settings.yml'
+      - 'terraform/*'
+      - '.github/workflows/terraform-deploy.yml'
   pull_request:
     branches:
       - main
     paths:
-      - '.github/actions/update-github-repo-settings.js'
-      - '.github/workflows/github-settings.yml'
+      - 'terraform/*'
+      - '.github/workflows/terraform-deploy.yml'
 
 
 jobs:
@@ -22,20 +22,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: set-env suffix
-        run: |
-          echo "$GITHUB_EVENT_PATH"
-          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          echo "$pull_number"
-          if [[ -n $pull_number && $pull_number != null ]]
-          then
-            suffix="review-$pull_number"
-          else
-            suffix="main"
-          fi
-          echo "$suffix"
 
-          echo "::set-env name=suffix::$suffix"
+      - name: set-env suffix
+        run: . .github/actions/calc-suffix.sh $GITHUB_EVENT_PATH
 
       - name: set pull_number var to tfvars & tf backend
         run: |
