@@ -47,7 +47,7 @@ jobs:
 
       - name: generate terraform backend
         run: |
-         . ./github/actions/envsubst-backend-hcl.sh
+         . .github/actions/envsubst-backend-hcl.sh
 
           cat terraform/backend.hcl
 
