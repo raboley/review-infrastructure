@@ -25,5 +25,5 @@ pdd:
 	ln -s -f ../../.pre-commit.sh .git/hooks/pre-commit
 	. ./scripts/install-pdd.sh
 
-docs:
-	go-slate site docs/ build/
+serve-docs:
+	go-slate server docs localhost:8080 --monitor-changes
