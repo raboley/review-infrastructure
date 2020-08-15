@@ -5,14 +5,20 @@ on:
     branches:
       - main
     paths:
-      - '.github/actions/update-github-repo-settings.js'
-      - '.github/workflows/github-settings.yml'
+      - 'terraform/*'
+      - '.github/workflows/terraform-deploy.yml'
+      - '.github/actions/calc-suffix.sh'
+      - '.github/actions/envsubst-auto-tfvars.sh'
+      - '.github/action/envsubst-backend-hcl.sh'
   pull_request:
     branches:
       - main
     paths:
-      - '.github/actions/update-github-repo-settings.js'
-      - '.github/workflows/github-settings.yml'
+      - 'terraform/*'
+      - '.github/workflows/terraform-deploy.yml'
+      - '.github/actions/calc-suffix.sh'
+      - '.github/actions/envsubst-auto-tfvars.sh'
+      - '.github/action/envsubst-backend-hcl.sh'
 
 
 jobs:
@@ -22,29 +28,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: set-env suffix
+        run: . .github/actions/calc-suffix.sh $GITHUB_EVENT_PATH
+
+      - name: generate env.auto.tfvars from template
         run: |
-          echo "$GITHUB_EVENT_PATH"
-          pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          echo "$pull_number"
-          if [[ -n $pull_number && $pull_number != null ]]
-          then
-            suffix="review-$pull_number"
-          else
-            suffix="main"
-          fi
-          echo "$suffix"
-
-          echo "::set-env name=suffix::$suffix"
-
-      - name: set pull_number var to tfvars & tf backend
-        run: |
-          echo '
-            suffix = "'$suffix'"
-            ' > env.auto.tfvars
-
-          cat env.auto.tfvars
-        working-directory: terraform
+          . .github/actions/envsubst-auto-tfvars.sh
+          cat terraform/env.auto.tfvars
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
@@ -54,11 +45,9 @@ jobs:
           terraform_wrapper: false
           terraform_version: 0.12.29
 
-      - name: Create Terraform Backend
+      - name: generate terraform backend
         run: |
-          echo 'workspaces { name = "review-infrastructure-'$suffix'" }
-                hostname     = "app.terraform.io"
-                organization = "russellboley"' > terraform/backend.hcl
+         . .github/actions/envsubst-backend-hcl.sh
 
           cat terraform/backend.hcl
 
