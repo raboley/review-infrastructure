@@ -8,6 +8,11 @@ setup:
 	#Install envsubst for macos
 	brew install gettext
 	brew link --force gettext
+	brew install jq
+	export environment="dev"
+	export TERRAFORM_CLOUD_TOKEN=$(cat ~/.terraform.d/credentials.tfrc.json | jq '.credentials."app.terraform.io".token')
+	. .github/actions/envsubst-backend-hcl.sh
+	. .github/actions/envsubst-auto-tfvars.sh
 
 init:
 	cd terraform && terraform init --backend-config=backend.hcl

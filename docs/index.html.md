@@ -46,6 +46,90 @@ review process a lot more tangible things to interact with. If this all sounds g
 
 We will see how to implement Review Infrastructure using Github Actions, and Terraform Cloud on Microsoft Azure.
 
+# Quickstart
+
+The quickest way to get going is to
+
+1. Have a Microsoft Azure account or sign up for one
+1. Have a Terraform Cloud Account or sign up for one
+1. Be on a mac
+1. Have brew installed
+
+## Install Dependencies
+
+```shell 
+git clone git@github.com:raboley/review-infrastructure.git
+cd review-infrastructure
+```
+
+First step is to clone the repo and cd into it.
+
+```shell
+make setup
+```
+
+> Manually update the organization below to be correct for your terraform cloud organization.
+
+```hcl
+# terraform/backend.hcl
+
+workspaces { name = "dev-infrastructure" }
+hostname     = "app.terraform.io"
+organization = "russellboley"
+```
+
+Next install the dependencies using make. Assuming you setup a TF cloud and Azure Account
+you should be taken through the login steps of each, and install all dependent tools. It will also create a 
+backend file and variable file for terraform local development.
+
+you will want to update the terraform backend to have the correct org, so update that.
+
+```shell
+make init
+```
+
+## Deploy dev infrastructure from local
+
+after that you should be able to terraform init using that backend file created to link it with remote state
+for the dev instance of your infrastructure.
+
+```shell
+make plan
+
+make apply
+```
+
+Finally, you should be able to plan and apply it to see it work for dev.
+
+Push this to `main` branch on github and it should trigger your action to deploy dev.
+
+Checking that github action it should succeed as well. If you go to your Azure Portal you should see one resource group
+and if you go to terraform cloud you should see one terraform workspace.
+
+## Create a review branch and launch review infrastructure
+
+Next if you create a branch off main, and make a small change, maybe add a comment to the `terraform/main.tf` file,
+then push it and create a pull request you should see the Terraform action run again. If you inspect it, you will see
+it will determine the environment to be review-<PR number> instead of dev, and will run to create
+
+1. A new backend in terraform cloud starting with review-<PR number>
+1. A resource group starting with review-<PR number>
+
+If you check Azure and Terraform Cloud you should now see both of these resource groups created. You can modify, 
+or add things and as long as you have the environment variable present in the naming they should all be isolated instances of the
+infrastructure.
+
+Each time you make a change and it push it, the infrastructure will be modified via terraform to match what the most up to date
+code says.
+
+## Destroy the review branch by merging to master or closing the PR
+
+If you either merge to master or abandon the PR you created it will trigger another workflow that will cleanup the 
+review infrastructure. This will destroy any infrastructure created by terraform, and delete the workspace in terraform cloud.
+This allows for any number of sets of review infrastructure to be created, and automatically cleaned up as changes go through
+the PR workflow. 
+
+
 # [Tutorial] Setting Up Review Infrastructure using Github Actions, Terraform Cloud and Microsoft Azure
 
 At the end of this tutorial you will have a CI/CD pipeline setup using Github Actions that will deploy resource groups
@@ -54,24 +138,14 @@ be expanded to azure functions, kubernetes, app service plans or even adapted fo
 
 ## Account Signups
 
-First thing you will need to have is a [Microsoft Azure Subscription](https://azure.microsoft.com/en-us/resources/videos/sign-up-for-microsoft-azure/) you can use, and a [terraform cloud account](https://app.terraform.io/signup/account). You
-can sign up for both for free on their respective websites.
+First thing you will need to have is a 
+
+* [Microsoft Azure Subscription](https://azure.microsoft.com/en-us/resources/videos/sign-up-for-microsoft-azure/)
+* [terraform cloud account](https://app.terraform.io/signup/account)
+
+You can sign up for both for free on their respective websites.
 
 ## local desktop setup.
-
-This tutorial will use the following technologies, and having them installed will be a pre-req:
-
-* Azure cli 
-* Terraform
-* Github Actions
-* Terraform Cloud
-
-The aim of this repo isn't to be a 101 on any one of these tools, but to also provide enough context to allow someone
-with little to no understanding to be successful at following this tutorial. Make sure you have installed the tools to the right.
-This is written from a mac os perspective, but if you are using windows either try Windows Subsystem For Linux, or
-toggle to the powershell tab.
- 
-if you have make installed you can just run `make setup` and it will take care of all pre-reqs on a mac machine.
 
 ```shell
 # Install Azure cli
@@ -89,7 +163,7 @@ Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI
 choco install terraform
 ```
 
-Next you will want to authenticate with Terraform Cloud and Azure locally
+> Next you will want to authenticate with Terraform Cloud and Azure locally
 
 ```script
 # Authenticate with Azure
@@ -99,7 +173,7 @@ az login
 terraform login
 ```
 
-When signing in with Azure make sure you select a subscription if you have multiple
+> When signing in with Azure make sure you select a subscription if you have multiple
 
 ```shell
 subscription_name=<subscription name>
@@ -110,6 +184,22 @@ az account set --subscription=$subscription_name
 $subscription_name=<subscription name>
 az account set --subscription=$subscription_name
 ```
+
+This tutorial will use the following technologies, and having them installed will be a pre-req:
+
+* Azure cli 
+* Terraform
+* Github Actions
+* Terraform Cloud
+
+The aim of this repo isn't to be a 101 on any one of these tools, but to also provide enough context to allow someone
+with little to no understanding to be successful at following this tutorial. Make sure you have installed the tools to the right.
+This is written from a mac os perspective, but if you are using windows either try Windows Subsystem For Linux, or
+toggle to the powershell tab.
+ 
+if you have make installed you can just run `make setup` and it will take care of all pre-reqs on a mac machine.
+
+
 
 ## The Roadmap
 
