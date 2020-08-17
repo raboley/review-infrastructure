@@ -13,6 +13,9 @@ setup:
 	export TERRAFORM_CLOUD_TOKEN=$(cat ~/.terraform.d/credentials.tfrc.json | jq '.credentials."app.terraform.io".token')
 	. .github/actions/envsubst-backend-hcl.sh
 	. .github/actions/envsubst-auto-tfvars.sh
+	# installing rab for easy pipeline secret additions
+	brew install libsodium
+	go get github.com/raboley/rab
 
 init:
 	cd terraform && terraform init --backend-config=backend.hcl

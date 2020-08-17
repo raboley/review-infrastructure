@@ -439,6 +439,8 @@ jobs:
 this will place us in the root directory of the repository for future commands and give us availability to everything
 that is in our repo.
 
+
+
 Next we need to setup our workspace with the correct version of terraform.
 
 ```yaml
@@ -455,218 +457,86 @@ This step made by Hashicorp will install the version of terraform you specify, a
 token to the authentication
 so that you can connect with terraform cloud.
 
-To make this step work we need to add our terraform cloud token as a secret in github. To do that
+### Adding Secrets for Github Actions
 
+To make this step work we need to add our terraform cloud token as a secret in github. To do that there are a couple
+options, and I will go over two. 
 
-# Authentication
+1. Navigate to your repo on github.com > go to settings page > choose secrets from the side tab on the left > click new secret
+1. use the cli tool rab to upload the secrets from your env vars to github
 
-> To authorize, use this code:
+rab is a cli tool I made to assist in some of my pipeline actions and general helper things. I don't have critical 
+mass to really split it up, so it sits as a general utility tool for now.
 
-```ruby
-require 'kittn'
+If you ran `make setup` it should be installed assuming you have go, if you didn't then you can install it using go get
+and it has a dependency on libsodium since that is what github uses to decrypt secrets that are sent to github.
 
-api = Kittn::APIClient.authorize!('meowmeowmeow')
+```shell script
+brew install libsodium
+go get github.com/raboley/rab
 ```
 
-```python
-import kittn
+Then as long as all your values are set in your terminal's environment you should be able to just push it up there.
 
-api = kittn.authorize('meowmeowmeow')
+```shell script
+repo="review-infrastructure"
+owner="<your github username>"
+rab github add secret TF_API_TOKEN --repo $repo --owner $owner
 ```
 
-```shell
-# With shell, you can just pass the correct header with each request
-curl "api_endpoint_here"
-  -H "Authorization: meowmeowmeow"
+You can check in the github ui to ensure your secret is there.
+
+### Finishing Up the Terraform Pipeline
+
+Now that Terraform is going to be installed, we need to init the terraform workspace, and connect it to terraform cloud.
+
+>I was contemplating leaving steps out so that we would encounter the issues along the way and discover why we need to 
+add the extra steps, but instead I will just put them in and explain why. 
+
+To connect to terraform cloud and have a unique workspace for each environment, and the ability to create dynamic workspaces 
+for review branches. 
+
+We have a template file with a bash variable in it to get replaced using envsubst to basically substitiute anything in
+that file with variables from the environment. 
+
+```shell script
+  - name: generate terraform backend
+    run: |
+      envsubst < "terraform/backend.hcltemplate" > "terraform/backend.hcl"
+      cat terraform/backend.hcl
 ```
 
-```javascript
-const kittn = require('kittn');
+if you want to try and run that locally, you need to export the environment variable, so it will get substituted in the file.
 
-let api = kittn.authorize('meowmeowmeow');
+```shell script
+# install envsubst on mac
+brew install gettext
+brew link --force gettext
+
+# run locally for testing
+export environmet=dev
+envsubst < "terraform/backend.hcltemplate" > "terraform/backend.hcl"
+``` 
+
+That will create a backend file appropriate for the environment being deployed. Next we can init terraform.
+
+```terraform
+  - name: Terraform Init
+    run: terraform init -backend-config=backend.hcl
+    working-directory: terraform
 ```
 
-> Make sure to replace `meowmeowmeow` with your API key.
+This will run our terraform init and configure it to use our dynamic backend.
 
-Kittn uses API keys to allow access to the API. You can register a new Kittn API key at our [developer portal](http://example.com/developers).
+next we can setup our variables in much the same way, using envsubst. some configs where you need more auth items to be part of the config this may have to happen earlier.
 
-Kittn expects for the API key to be included in all API requests to the server in a header that looks like the following:
-
-`Authorization: meowmeowmeow`
-
-<aside class="notice">
-You must replace <code>meowmeowmeow</code> with your personal API key.
-</aside>
-
-# Kittens
-
-## Get All Kittens
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get
+```shell script
+  - name: generate env.auto.tfvars from template
+    run: |
+      envsubst < "terraform/env.auto.tfvarstemplate" > "terraform/env.auto.tfvars"
+      cat terraform/env.auto.tfvars
 ```
 
-```python
-import kittn
+This will allow you use the same method to dynamically send variables to terraform cloud.
 
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get()
-```
-
-```shell
-curl "http://example.com/api/kittens"
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let kittens = api.kittens.get();
-```
-
-> The above command returns JSON structured like this:
-
-```json
-[
-  {
-    "id": 1,
-    "name": "Fluffums",
-    "breed": "calico",
-    "fluffiness": 6,
-    "cuteness": 7
-  },
-  {
-    "id": 2,
-    "name": "Max",
-    "breed": "unknown",
-    "fluffiness": 5,
-    "cuteness": 10
-  }
-]
-```
-
-This endpoint retrieves all kittens.
-
-### HTTP Request
-
-`GET http://example.com/api/kittens`
-
-### Query Parameters
-
-Parameter | Default | Description
---------- | ------- | -----------
-include_cats | false | If set to true, the result will also include cats.
-available | true | If set to false, the result will include kittens that have already been adopted.
-
-<aside class="success">
-Remember — a happy kitten is an authenticated kitten!
-</aside>
-
-## Get a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```shell
-curl "http://example.com/api/kittens/2"
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.get(2);
-```
-
-> The above command returns JSON structured like this:
-
-```json
-{
-  "id": 2,
-  "name": "Max",
-  "breed": "unknown",
-  "fluffiness": 5,
-  "cuteness": 10
-}
-```
-
-This endpoint retrieves a specific kitten.
-
-<aside class="warning">Inside HTML code blocks like this one, you can't use Markdown, so use <code>&lt;code&gt;</code> blocks to denote code.</aside>
-
-### HTTP Request
-
-`GET http://example.com/kittens/<ID>`
-
-### URL Parameters
-
-Parameter | Description
---------- | -----------
-ID | The ID of the kitten to retrieve
-
-## Delete a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.delete(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.delete(2)
-```
-
-```shell
-curl "http://example.com/api/kittens/2"
-  -X DELETE
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.delete(2);
-```
-
-> The above command returns JSON structured like this:
-
-```json
-{
-  "id": 2,
-  "deleted" : ":("
-}
-```
-
-This endpoint deletes a specific kitten.
-
-### HTTP Request
-
-`DELETE http://example.com/kittens/<ID>`
-
-### URL Parameters
-
-Parameter | Description
---------- | -----------
-ID | The ID of the kitten to delete
 

@@ -1,3 +1,3 @@
-workspaces { name = "review-infrastructure-$suffix" }
+workspaces { name = "$environment-infrastructure" }
 hostname     = "app.terraform.io"
 organization = "russellboley"
